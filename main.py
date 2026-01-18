@@ -1,6 +1,9 @@
 import zipfile
 import numpy as np
 import pandas as pd
+import streamlit as st
+import matplotlib.pyplot as plt
+import seaborn as sns
 
 
 from sklearn.model_selection import train_test_split, cross_val_score
@@ -121,3 +124,71 @@ submission = pd.DataFrame({
 
 submission.to_csv('submission.csv', index=False)
 print('submission.csv сохранён')
+
+
+fig, axes = plt.subplots(1, 2, figsize=(14, 5))
+
+# Histogram: исходные цены
+axes[0].hist(train_df['SalePrice'], bins=50)
+axes[0].set_title('Распределение цен (SalePrice)')
+axes[0].set_xlabel('Цена')
+axes[0].set_ylabel('Количество объектов')
+
+# Histogram: лог-трансформация
+axes[1].hist(np.log1p(train_df['SalePrice']), bins=50)
+axes[1].set_title('Лог-распределение цен (log(SalePrice))')
+axes[1].set_xlabel('log(Цена)')
+axes[1].set_ylabel('Количество объектов')
+
+plt.tight_layout()
+st.pyplot(fig)
+
+
+mean_price = train_df['SalePrice'].mean()
+median_price = train_df['SalePrice'].median()
+
+col1, col2 = st.columns(2)
+
+with col1:
+    st.metric(
+        label="Средняя цена",
+        value=f"{mean_price:,.0f}"
+    )
+
+with col2:
+    st.metric(
+        label="Медианная цена",
+        value=f"{median_price:,.0f}"
+    )
+
+fig, axes = plt.subplots(1,3,figsize=(18, 5))
+axes[0].scatter(train_df['GrLivArea'], train_df['SalePrice'], alpha = 0.3)
+axes[0].set_title('Sale Price vs Living Area')
+axes[0].set_xlabel('Square')
+axes[0].set_ylabel('Price')
+
+sns.boxplot(x=train_df['TotRmsAbvGrd'], y=train_df['SalePrice'], ax=axes[1])
+axes[1].set_title('Price vs number of rooms')
+axes[1].set_xlabel('number of rooms')
+axes[1].set_ylabel('Price')
+
+sns.boxplot(x=train_df['OverallQual'], y=train_df['SalePrice'], ax=axes[2])
+axes[2].set_title('Price vs quality of the house')
+axes[2].set_xlabel('number quality of the house')
+axes[2].set_ylabel('Price')
+
+
+plt.tight_layout()
+st.pyplot(fig)
+st.write('Price and characteristics of the object')
+
+fig, axes = plt.subplots(figsize=(18, 5))
+sns.boxplot(x=train_df['Neighborhood'], y=train_df['SalePrice'], ax=axes)
+axes.set_title('Price vs number of rooms')
+axes.set_xlabel('number of rooms')
+axes.set_ylabel('Price')
+
+st.pyplot(fig)
+
+
+
